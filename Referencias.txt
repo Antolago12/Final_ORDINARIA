@@ -1,0 +1,6 @@
+Comando para docker
+
+docker run -d -p 8081:8081 --name apirest backend:latest
+
+
+docker run -d -p 8082:8082 --name frontend frontend:latest
