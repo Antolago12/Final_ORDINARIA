@@ -1,6 +1,10 @@
 package es.ufv.dis.back.final2025.ALB;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -9,6 +13,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+//----------PDF
+import java.io.FileOutputStream;
+import java.io.IOException;
+//----------PDF
 
 @Service
 public class UsuarioService {
@@ -76,8 +85,50 @@ public class UsuarioService {
         }
     }
 
-    // Si quieres, método para recargar la lista desde el fichero:
+    // Si quieres, metodo para recargar la lista desde el fichero:
     public void recargarDesdeFichero() {
         usuarios = cargarUsuarios();
     }
+
+    public void generarPdf(HttpServletResponse response) {
+        Document doc = new Document(PageSize.A4, 50, 50, 100, 72);
+        try {
+            // Guarda el PDF en la raíz del backend
+            PdfWriter.getInstance(doc, new FileOutputStream("info.pdf"));
+            doc.open();
+
+            // Título
+            Paragraph titulo = new Paragraph("Listado de Usuarios");
+            titulo.setAlignment(Element.ALIGN_CENTER);
+            doc.add(titulo);
+            doc.add(new Paragraph(" ")); // Espacio
+
+            // Tabla con columnas relevantes
+            PdfPTable table = new PdfPTable(5); // Número de columnas visibles (ajusta si quieres)
+            table.addCell("Nombre");
+            table.addCell("Apellidos");
+            table.addCell("NIF");
+            table.addCell("Email");
+            table.addCell("Ciudad");
+
+            for (Usuario usuario : getAllUsuarios()) {
+                table.addCell(usuario.getNombre());
+                table.addCell(usuario.getApellidos());
+                table.addCell(usuario.getNif());
+                table.addCell(usuario.getEmail());
+                table.addCell(usuario.getDireccion().getCiudad());
+            }
+
+            doc.add(table);
+
+            doc.close();
+
+            // Opcional: Puedes escribir en el response, pero para el enunciado basta con guardar el PDF.
+            // response.getWriter().write("PDF generado correctamente");
+
+        } catch (DocumentException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

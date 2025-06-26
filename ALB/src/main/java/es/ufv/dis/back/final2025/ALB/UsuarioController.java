@@ -1,5 +1,6 @@
 package es.ufv.dis.back.final2025.ALB;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,4 +36,12 @@ public class UsuarioController {
     public void updateUsuario(@PathVariable String id, @RequestBody Usuario usuario) {
         usuarioService.updateUsuario(id, usuario);
     }
+
+    // En UsuarioController.java (backend)
+    @GetMapping("/pdf")
+    public void generarPdf(HttpServletResponse response) {
+        usuarioService.generarPdf(response);
+    }
+
+
 }
