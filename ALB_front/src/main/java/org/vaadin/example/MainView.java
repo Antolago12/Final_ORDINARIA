@@ -3,6 +3,7 @@ package org.vaadin.example;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
@@ -42,10 +43,29 @@ public class MainView extends VerticalLayout {
             return editarBtn;
         }).setHeader("Acciones");
 
-        add(grid);
+        Button generarPdfBtn = new Button("Generar PDF", event -> generarPdf());
 
-        cargarUsuarios(); // Llama al metodo que hace el GET
+        add(grid, generarPdfBtn); // Así lo pones debajo del grid
+        cargarUsuarios(); // Llama al metodo que hace el GETnera
+
     }
+
+    private void generarPdf() {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("http://localhost:8081/usuarios/pdf")) // Ajusta el puerto si cambia
+                    .GET()
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            Notification.show("PDF generado correctamente en el backend.", 3000, Notification.Position.MIDDLE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Notification.show("Error al generar el PDF.", 3000, Notification.Position.MIDDLE);
+        }
+    }
+
+
 
     // Metodo para obtener los usuarios usando HttpClient y Gson
     private void cargarUsuarios() {
