@@ -30,10 +30,11 @@ public class MainView extends VerticalLayout {
         grid = new Grid<>(Usuario.class, false);
 
         // Configura las columnas manualmente para personalizar nombres
-        grid.addColumn(Usuario::getNombre).setHeader("Nombre");
-        grid.addColumn(Usuario::getApellidos).setHeader("Apellidos");
-        grid.addColumn(Usuario::getNif).setHeader("NIF");
-        grid.addColumn(Usuario::getEmail).setHeader("Email");
+        grid.addColumn(Usuario::getNombre).setHeader("Nombre").setSortable(true);
+        grid.addColumn(Usuario::getApellidos).setHeader("Apellidos").setSortable(true);
+        grid.addColumn(Usuario::getNif).setHeader("NIF").setSortable(true);
+        grid.addColumn(Usuario::getEmail).setHeader("Email").setSortable(true);
+
 
         // Botón "Editar" en cada fila
         grid.addComponentColumn(usuario -> {
@@ -43,10 +44,10 @@ public class MainView extends VerticalLayout {
 
         add(grid);
 
-        cargarUsuarios(); // Llama al método que hace el GET
+        cargarUsuarios(); // Llama al metodo que hace el GET
     }
 
-    // Método para obtener los usuarios usando HttpClient y Gson
+    // Metodo para obtener los usuarios usando HttpClient y Gson
     private void cargarUsuarios() {
         try {
             HttpClient client = HttpClient.newHttpClient();
@@ -63,10 +64,32 @@ public class MainView extends VerticalLayout {
         }
     }
 
-    // Método para mostrar un diálogo modal para editar usuario
+    // Metodo para mostrar un diálogo modal para editar usuario
     private void abrirDialogoEditar(Usuario usuario) {
         Dialog dialog = new Dialog();
-        dialog.add("Aquí iría el formulario de edición para " + usuario.getNombre());
+        VerticalLayout layout = new VerticalLayout();
+
+        TextField nombreField = new TextField("Nombre", usuario.getNombre());
+        TextField apellidosField = new TextField("Apellidos", usuario.getApellidos());
+        TextField emailField = new TextField("Email", usuario.getEmail());
+        TextField nifField = new TextField("NIF", usuario.getNif());
+
+        Button guardarBtn = new Button("Guardar", event -> {
+            usuario.setNombre(nombreField.getValue());
+            usuario.setApellidos(apellidosField.getValue());
+            usuario.setEmail(emailField.getValue());
+            usuario.setNif(nifField.getValue());
+            // Aquí harías un PUT al backend para actualizar el usuario
+            // updateUsuarioEnBackend(usuario);
+            dialog.close();
+            cargarUsuarios(); // Refresca la tabla después de editar
+        });
+
+        Button cancelarBtn = new Button("Cancelar", event -> dialog.close());
+
+        layout.add(nombreField, apellidosField, emailField, nifField, guardarBtn, cancelarBtn);
+        dialog.add(layout);
         dialog.open();
     }
+
 }
