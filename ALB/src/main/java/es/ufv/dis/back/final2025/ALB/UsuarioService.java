@@ -15,11 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 //----------PDF
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 //----------PDF
