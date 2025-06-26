@@ -1,59 +1,72 @@
 package org.vaadin.example;
 
-import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.vaadin.example.model.Usuario;
 
-/**
- * A sample Vaadin view class.
- * <p>
- * To implement a Vaadin view just extend any Vaadin component and use @Route
- * annotation to announce it in a URL as a Spring managed bean.
- * <p>
- * A new instance of this class is created for every new user and every browser
- * tab/window.
- * <p>
- * The main view contains a text field for getting the user name and a button
- * that shows a greeting message in a notification.
- */
-@Route
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import java.util.List;
+
+// Importa tus modelos
+// import org.vaadin.example.model.Usuario; // O tu paquete
+
+@Route("")
 public class MainView extends VerticalLayout {
 
-    /**
-     * Construct a new Vaadin view.
-     * <p>
-     * Build the initial UI state for the user accessing the application.
-     *
-     * @param service
-     *            The message service. Automatically injected Spring managed bean.
-     */
-    public MainView(GreetService service) {
+    private Grid<Usuario> grid;
+    private Gson gson = new Gson();
+    private final String API_URL = "http://localhost:8081/usuarios"; // Ajusta el puerto si lo cambias
 
-        // Use TextField for standard text input
-        TextField textField = new TextField("Your name");
-        textField.addClassName("bordered");
+    public MainView() {
+        grid = new Grid<>(Usuario.class, false);
 
-        // Button click listeners can be defined as lambda expressions
-        Button button = new Button("Say hello", e -> {
-            add(new Paragraph(service.greet(textField.getValue())));
-        });
+        // Configura las columnas manualmente para personalizar nombres
+        grid.addColumn(Usuario::getNombre).setHeader("Nombre");
+        grid.addColumn(Usuario::getApellidos).setHeader("Apellidos");
+        grid.addColumn(Usuario::getNif).setHeader("NIF");
+        grid.addColumn(Usuario::getEmail).setHeader("Email");
 
-        // Theme variants give you predefined extra styles for components.
-        // Example: Primary button has a more prominent look.
-        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        // Botón "Editar" en cada fila
+        grid.addComponentColumn(usuario -> {
+            Button editarBtn = new Button("Editar", click -> abrirDialogoEditar(usuario));
+            return editarBtn;
+        }).setHeader("Acciones");
 
-        // You can specify keyboard shortcuts for buttons.
-        // Example: Pressing enter in this view clicks the Button.
-        button.addClickShortcut(Key.ENTER);
+        add(grid);
 
-        // Use custom CSS classes to apply styling. This is defined in
-        // styles.css.
-        addClassName("centered-content");
+        cargarUsuarios(); // Llama al método que hace el GET
+    }
 
-        add(textField, button);
+    // Método para obtener los usuarios usando HttpClient y Gson
+    private void cargarUsuarios() {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(API_URL))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            List<Usuario> usuarios = gson.fromJson(response.body(), new TypeToken<List<Usuario>>() {}.getType());
+            grid.setItems(usuarios);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Método para mostrar un diálogo modal para editar usuario
+    private void abrirDialogoEditar(Usuario usuario) {
+        Dialog dialog = new Dialog();
+        dialog.add("Aquí iría el formulario de edición para " + usuario.getNombre());
+        dialog.open();
     }
 }

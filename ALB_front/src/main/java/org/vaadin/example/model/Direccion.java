@@ -1,4 +1,4 @@
-package org.vaadin.example;
+package org.vaadin.example.model;
 
 public class Direccion {
     private String calle;
